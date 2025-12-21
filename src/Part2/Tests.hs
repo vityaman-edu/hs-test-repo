@@ -22,6 +22,7 @@ unit_replaceVar = do
             Variable "x" |+| Variable "y" |*| Variable "x" |+| Variable "y"))) @?=
         (Variable "z" |+| Variable "p" |*| Variable "z" |+| Variable "p")
 
+prop_evaluate :: Int -> Int -> Int -> Property
 prop_evaluate x y z =
     let x' = IntConstant x
         y' = IntConstant y
@@ -30,5 +31,3 @@ prop_evaluate x y z =
     (evaluate (x' |+| y') == IntConstant (x + y)) .&&.
         (evaluate (x' |+| Variable "x" |+| y') == (x' |+| Variable "x" |+| y')) .&&.
         (evaluate (x' |*| y' |+| z' |*| x') == IntConstant (x * y + z * x))
-
-
