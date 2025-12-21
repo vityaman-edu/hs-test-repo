@@ -58,7 +58,7 @@ isDateCorrect day month year = case () of
 -- возведение числа в степень, duh
 -- готовые функции и плавающую арифметику использовать нельзя
 myPow :: Integer -> Integer -> Integer
-myPow = notImplementedYet
+myPow x e = product (replicate (fromInteger e) x)
 
 -- является ли данное число простым?
 isPrime :: Integer -> Bool
