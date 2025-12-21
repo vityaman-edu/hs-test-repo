@@ -1,6 +1,7 @@
 module Part1.Tasks where
 
 import Data.Fixed (mod')
+import Data.List (sort)
 import Util (notImplementedYet)
 
 factorial :: Integer -> Integer
@@ -87,4 +88,18 @@ shapeArea points =
 --  2, если он прямоугольный
 --  -1, если это не треугольник
 triangleKind :: Double -> Double -> Double -> Integer
-triangleKind a b c = notImplementedYet
+triangleKind a b c = case () of
+  _
+    | a <= 0 || b <= 0 || c <= 0 -> bad
+    | a + b <= c -> bad
+    | b + c <= a -> bad
+    | c + a <= b -> bad
+    | otherwise -> case sort [a, b, c] of
+        [a, b, c] | c ^ 2 == a ^ 2 + b ^ 2 -> straight
+        [a, b, c] | c ^ 2 <= a ^ 2 + b ^ 2 -> sharp
+        [a, b, c] | c ^ 2 >= a ^ 2 + b ^ 2 -> blunt
+  where
+    bad = -1
+    blunt = 0
+    sharp = 1
+    straight = 2
