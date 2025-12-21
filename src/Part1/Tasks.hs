@@ -62,7 +62,10 @@ myPow x e = product (replicate (fromInteger e) x)
 
 -- является ли данное число простым?
 isPrime :: Integer -> Bool
-isPrime = notImplementedYet
+isPrime x = x `elem` [1, 2] || not (any isDivisor [2 .. maxPossibleDivisor])
+  where
+    maxPossibleDivisor = ceiling (sqrt $ fromInteger x)
+    isDivisor y = x `mod` y == 0
 
 type Point2D = (Double, Double)
 
