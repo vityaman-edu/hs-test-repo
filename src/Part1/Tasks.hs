@@ -72,8 +72,12 @@ type Point2D = (Double, Double)
 -- рассчитайте площадь многоугольника по формуле Гаусса
 -- многоугольник задан списком координат
 shapeArea :: [Point2D] -> Double
--- shapeArea points = notImplementedYet
-shapeArea = notImplementedYet
+shapeArea points =
+  -- On some inputs the result is actually undefined,
+  -- as I do not mind how this formula works on invalid shapes
+  abs (sum (fmap (\((x1, y1), (x2, y2)) -> x1 * y2 - x2 * y1) pairs)) / 2
+  where
+    pairs = zip points (tail points ++ [head points])
 
 -- треугольник задан длиной трёх своих сторон.
 -- функция должна вернуть
