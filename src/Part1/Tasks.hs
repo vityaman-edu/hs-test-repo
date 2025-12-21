@@ -30,7 +30,10 @@ myCos x = maclaurin (normalized x) 100
 
 -- наибольший общий делитель двух чисел
 myGCD :: Integer -> Integer -> Integer
-myGCD = notImplementedYet
+myGCD x y = if mn == 0 then mx else myGCD mn (mx `mod` mn)
+  where
+    mn = min (abs x) (abs y)
+    mx = max (abs x) (abs y)
 
 -- является ли дата корректной с учётом количества дней в месяце и
 -- вискокосных годов?
