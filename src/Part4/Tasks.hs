@@ -34,16 +34,37 @@ instance (Show a) => Show (ReverseList a) where
       showContent (REmpty :< x) = shows x
       showContent (xs :< x) = showContent xs . showString "," . shows x
 
-instance Eq (ReverseList a) where
-  (==) = notImplementedYet
-  (/=) = notImplementedYet
+instance (Eq a) => Eq (ReverseList a) where
+  (==) :: ReverseList a -> ReverseList a -> Bool
+  (==) REmpty REmpty = True
+  (==) REmpty _ = False
+  (==) _ REmpty = False
+  (==) (xs :< x) (ys :< y) = x == y && xs == ys
 
-instance Semigroup (ReverseList a)
+instance Semigroup (ReverseList a) where
+  (<>) :: ReverseList a -> ReverseList a -> ReverseList a
+  (<>) xs REmpty = xs
+  (<>) xs (ys :< y) = (xs <> ys) :< y
 
-instance Monoid (ReverseList a)
+instance Monoid (ReverseList a) where
+  mempty :: ReverseList a
+  mempty = REmpty
 
-instance Functor ReverseList
+instance Functor ReverseList where
+  fmap :: (a -> b) -> ReverseList a -> ReverseList b
+  fmap _ REmpty = REmpty
+  fmap f (xs :< x) = fmap f xs :< f x
 
-instance Applicative ReverseList
+instance Applicative ReverseList where
+  pure :: a -> ReverseList a
+  pure x = REmpty :< x
 
-instance Monad ReverseList
+  (<*>) :: ReverseList (a -> b) -> ReverseList a -> ReverseList b
+  (<*>) REmpty _ = REmpty
+  (<*>) _ REmpty = REmpty
+  (<*>) (fs :< f) xs = (fs <*> xs) <> fmap f xs
+
+instance Monad ReverseList where
+  (>>=) :: ReverseList a -> (a -> ReverseList b) -> ReverseList b
+  (>>=) REmpty _ = REmpty
+  (>>=) (xs :< x) f = (xs >>= f) <> f x
