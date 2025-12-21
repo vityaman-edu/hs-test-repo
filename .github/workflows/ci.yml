@@ -1,4 +1,4 @@
-name: Haskell
+name: Haskell CI
 
 on:
   push:
@@ -15,35 +15,36 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Haskell (GHC and Stack)
+        id: setup-haskell
         uses: haskell/actions/setup@v2
         with:
           stack-version: 'latest'
 
-      - name: Cache dependencies
+      - name: Cache Stack dependencies
         uses: actions/cache@v4
         with:
           path: ~/.stack
-          key: ${{ runner.os }}-stack-${{ hashFiles('**/stack.yaml.lock') }}
+          key: ${{ runner.os }}-stack-ghc-${{ steps.setup-haskell.outputs.ghc-version }}-${{ hashFiles('**/stack.yaml.lock') }}
           restore-keys: |
-            ${{ runner.os }}-stack-
+            ${{ runner.os }}-stack-ghc-${{ steps.setup-haskell.outputs.ghc-version }}-
 
-      - name: Build
+      - name: Build project
         run: stack build
 
-      - name: Test Part 1
+      - name: Run Part 1 tests
         run: stack test --ta "-p Part1"
 
-      - name: Test Part 2
+      - name: Run Part 2 tests
         run: stack test --ta "-p Part2"
 
-      - name: Test Part 3
+      - name: Run Part 3 tests
         run: stack test --ta "-p Part3"
 
-      - name: Test Part 4
+      - name: Run Part 4 tests
         run: stack test --ta "-p Part4"
 
-      - name: Test Part 5
+      - name: Run Part 5 tests
         run: stack test --ta "-p Part5"
 
-      - name: Test Part 6
+      - name: Run Part 6 tests
         run: stack test --ta "-p Part6"
