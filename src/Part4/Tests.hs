@@ -12,6 +12,9 @@ unit_show =
     do
         show (REmpty :< 1 :< 2 :< 3 :< 4 :< 5) @?= "[1,2,3,4,5]"
         show empty @?= "[]"
+        show (REmpty :< 0 :< 1) @?= "[0,1]"
+        show (REmpty :< 1) @?= "[1]"
+        show (REmpty :< 1 :< 0) @?= "[1,0]"
 
 prop_show lst =
     show (listToRlist lst) == show lst
