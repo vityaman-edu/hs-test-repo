@@ -38,7 +38,22 @@ myGCD x y = if mn == 0 then mx else myGCD mn (mx `mod` mn)
 -- является ли дата корректной с учётом количества дней в месяце и
 -- вискокосных годов?
 isDateCorrect :: Integer -> Integer -> Integer -> Bool
-isDateCorrect = notImplementedYet
+isDateCorrect day month year = case () of
+  _
+    | year <= 0 -> False
+    | month <= 0 -> False
+    | 12 < month -> False
+    | day <= 0 -> False
+    | daysInMonth month (isLeap year) < day -> False
+    | otherwise -> True
+  where
+    isLeap year =
+      year `mod` 4 == 0 && (year `mod` 100 /= 0 || year `mod` 400 == 0)
+    daysInMonth month is_leap =
+      case month of
+        2 -> if is_leap then 29 else 28
+        x | x `elem` [4, 6, 9, 11] -> 30
+        _ -> 31
 
 -- возведение числа в степень, duh
 -- готовые функции и плавающую арифметику использовать нельзя
