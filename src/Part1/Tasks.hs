@@ -75,8 +75,9 @@ shapeArea :: [Point2D] -> Double
 shapeArea points =
   -- On some inputs the result is actually undefined,
   -- as I do not mind how this formula works on invalid shapes
-  abs (sum (fmap (\((x1, y1), (x2, y2)) -> x1 * y2 - x2 * y1) pairs)) / 2
+  abs (sum (fmap det pairs)) / 2
   where
+    det ((x1, y1), (x2, y2)) = x1 * y2 - x2 * y1
     pairs = zip points (tail points ++ [head points])
 
 -- треугольник задан длиной трёх своих сторон.
