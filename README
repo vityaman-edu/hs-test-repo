@@ -8,4 +8,6 @@ $ stack test
 
 $ stack ghci --test
 
+Запуск заданной части тестов
 
+$ stack test --ta "-p Part1"

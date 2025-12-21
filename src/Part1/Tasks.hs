@@ -1,14 +1,32 @@
 module Part1.Tasks where
 
-import Util(notImplementedYet)
+import Data.Fixed (mod')
+import Util (notImplementedYet)
+
+factorial :: Integer -> Integer
+factorial n = product [1 .. n]
 
 -- синус числа (формула Тейлора)
 mySin :: Double -> Double
-mySin = notImplementedYet
+mySin x = maclaurin (normalized x) 100
+  where
+    maclaurin :: Double -> Integer -> Double
+    maclaurin x n = sum (fmap term [0 .. n])
+      where
+        term n = (((-1) ^ n) * (x ^ (2 * n + 1))) / fromIntegral (factorial (2 * n + 1))
+    normalized :: Double -> Double
+    normalized x = x `mod'` (2 * pi)
 
 -- косинус числа (формула Тейлора)
 myCos :: Double -> Double
-myCos = notImplementedYet
+myCos x = maclaurin (normalized x) 100
+  where
+    maclaurin :: Double -> Integer -> Double
+    maclaurin x n = sum (fmap term [0 .. n])
+      where
+        term n = (-1) ^^ n * x ^^ (2 * n) / fromIntegral (factorial (2 * n))
+    normalized :: Double -> Double
+    normalized x = x `mod'` (2 * pi)
 
 -- наибольший общий делитель двух чисел
 myGCD :: Integer -> Integer -> Integer
@@ -33,7 +51,7 @@ type Point2D = (Double, Double)
 -- рассчитайте площадь многоугольника по формуле Гаусса
 -- многоугольник задан списком координат
 shapeArea :: [Point2D] -> Double
---shapeArea points = notImplementedYet
+-- shapeArea points = notImplementedYet
 shapeArea = notImplementedYet
 
 -- треугольник задан длиной трёх своих сторон.
