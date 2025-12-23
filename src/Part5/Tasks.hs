@@ -29,10 +29,12 @@ myConcatMap :: (a -> [b]) -> [a] -> [b]
 myConcatMap f xs = myConcat $ myMap f xs
 
 myReverse :: [a] -> [a]
-myReverse = notImplementedYet
+myReverse = myFoldl (flip (:)) []
 
 myFilter :: (a -> Bool) -> [a] -> [a]
-myFilter p = notImplementedYet
+myFilter p = myFoldr condappend []
+  where
+    condappend a = if p a then (a :) else id
 
 myPartition :: (a -> Bool) -> [a] -> ([a], [a])
 myPartition p = notImplementedYet
