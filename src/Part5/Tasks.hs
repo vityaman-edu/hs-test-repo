@@ -22,11 +22,11 @@ myMap f = myFoldr (mappend f) []
   where
     mappend f y xs = f y : xs
 
-myConcatMap :: (a -> [b]) -> [a] -> [b]
-myConcatMap f = notImplementedYet
-
 myConcat :: [[a]] -> [a]
-myConcat = notImplementedYet
+myConcat = myFoldr (++) []
+
+myConcatMap :: (a -> [b]) -> [a] -> [b]
+myConcatMap f xs = myConcat $ myMap f xs
 
 myReverse :: [a] -> [a]
 myReverse = notImplementedYet
