@@ -62,8 +62,8 @@ zero = matrixZero
 
 -- Перемножение матриц
 multiplyMatrix :: (Matrix m) => m -> m -> m
-multiplyMatrix = notImplementedYet
+multiplyMatrix = notImplementedYet -- TODO
 
 -- Определитель матрицы
 determinant :: (Matrix m) => m -> Int
-determinant = notImplementedYet
+determinant = notImplementedYet -- TODO
