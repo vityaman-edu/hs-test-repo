@@ -32,9 +32,14 @@ myReverse :: [a] -> [a]
 myReverse = myFoldl (flip (:)) []
 
 myFilter :: (a -> Bool) -> [a] -> [a]
-myFilter p = myFoldr condappend []
+myFilter p = myFoldr maybbend []
   where
-    condappend a = if p a then (a :) else id
+    maybbend a = if p a then (a :) else id
 
 myPartition :: (a -> Bool) -> [a] -> ([a], [a])
-myPartition p = notImplementedYet
+myPartition p = myFoldr route ([], [])
+  where
+    route x (lhs, rhs) =
+      if p x
+        then (x : lhs, rhs)
+        else (lhs, x : rhs)
