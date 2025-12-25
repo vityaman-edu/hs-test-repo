@@ -46,15 +46,15 @@ class Matrix m where
   matrixPut :: m -> Int -> Int -> MatrixElement m -> Either String m
 
   -- Writting code nobody can read
-  (*) :: (Num (MatrixElement m)) => m -> m -> Either String m
-  (*) lhs rhs
+  matrixProduct :: (Num (MatrixElement m)) => m -> m -> Either String m
+  matrixProduct lhs rhs
     | n /= n1 =
         Left $
           "Can not compute product of matricies "
             ++ (show (m, n) ++ " and " ++ show (n1, p))
     where
       ((m, n), (n1, p)) = (matrixSize lhs, matrixSize rhs)
-  (*) lhs rhs =
+  matrixProduct lhs rhs =
     let ((m, n), (_, p)) = (matrixSize lhs, matrixSize rhs)
         b i j = fromRight (error ":(") (matrixGet rhs i j)
         a i j = fromRight (error ":(") (matrixGet lhs i j)
@@ -206,9 +206,13 @@ zero w h = case matrixZero h w of
   Left message -> error message
 
 -- Перемножение матриц
-multiplyMatrix :: (Matrix m) => m -> m -> m
-multiplyMatrix = notImplementedYet -- TODO
+multiplyMatrix :: (Matrix m, Num (MatrixElement m)) => m -> m -> m
+multiplyMatrix lhs rhs = case lhs `matrixProduct` rhs of
+  Right m -> m
+  Left message -> error message
 
 -- Определитель матрицы
 determinant :: (Matrix m) => m -> Int
 determinant = notImplementedYet -- TODO
+
+
