@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE InstanceSigs #-}
@@ -5,6 +6,7 @@
 
 module Part6.Tasks where
 
+import Control.Monad (foldM)
 import Data.Either (fromRight)
 import Data.Map
 import Data.Maybe (fromMaybe, listToMaybe)
@@ -42,6 +44,30 @@ class Matrix m where
   -- FIXME: Take the matrix as a second argument
   matrixGet :: m -> Int -> Int -> Either String (MatrixElement m)
   matrixPut :: m -> Int -> Int -> MatrixElement m -> Either String m
+
+  -- Writting code nobody can read
+  (*) :: (Num (MatrixElement m)) => m -> m -> Either String m
+  (*) lhs rhs
+    | n /= n1 =
+        Left $
+          "Can not compute product of matricies "
+            ++ (show (m, n) ++ " and " ++ show (n1, p))
+    where
+      ((m, n), (n1, p)) = (matrixSize lhs, matrixSize rhs)
+  (*) lhs rhs =
+    let ((m, n), (_, p)) = (matrixSize lhs, matrixSize rhs)
+        b i j = fromRight (error ":(") (matrixGet rhs i j)
+        a i j = fromRight (error ":(") (matrixGet lhs i j)
+        c i j = sum $ fmap (\k -> a i k Prelude.* b k j) [0 .. n - 1]
+     in do
+          zero <- matrixZero m p
+          foldM
+            (\m (i, j) -> matrixPut m i j (c i j))
+            zero
+            [(i, j) | i <- [0 .. m - 1], j <- [0 .. p - 1]]
+
+matrixSize :: (Matrix m) => m -> (Int, Int)
+matrixSize m = (matrixHeight m, matrixWidth m)
 
 matrixBadSize :: String -> (Int, Int) -> String
 matrixBadSize matrix size =
