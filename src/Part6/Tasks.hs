@@ -43,8 +43,8 @@ class Matrix mx where
   matrixTranspose :: mx -> MatrixResult mx
   matrixTranspose = matrixTransposeNaive
 
-  matrixMinorByHead :: mx -> Int -> MatrixResult (MatrixElement mx, mx)
-  matrixMinorByHead = matrixMinorByHeadNaive
+  matrixMinors :: mx -> MatrixResult [(MatrixElement mx, mx)]
+  matrixMinors = matrixMinorsNaive
 
   matrixDeterminant :: (Num (MatrixElement mx)) => mx -> MatrixResult (MatrixElement mx)
   matrixDeterminant = matrixDeterminantNaive
@@ -97,25 +97,27 @@ matrixTransposeNaive m = matrixNew w h e
     (h, w) = matrixSize m
     e j i = matrixGet' i j m
 
-matrixMinorByHeadNaive :: (Matrix mx) => mx -> Int -> MatrixResult (MatrixElement mx, mx)
-matrixMinorByHeadNaive m index = do
-  x <- matrixGet index 0 m
-  new <- matrixNew (h - 1) (w - 1) e
-  return (x, new)
+matrixMinorsNaive :: (Matrix mx) => mx -> MatrixResult [(MatrixElement mx, mx)]
+matrixMinorsNaive m = mapM minor [0 .. h - 1]
   where
     h = matrixHeight m
     w = matrixWidth m
-    row i | i < index = i
-    row i | index <= i = i + 1
-    col j = j + 1
-    e i j = either error id $ matrixGet (row i) (col j) m
+    minor index = do
+      x <- matrixGet index 0 m
+      new <- matrixNew (h - 1) (w - 1) e
+      return (x, new)
+      where
+        row i | i < index = i
+        row i | index <= i = i + 1
+        col j = j + 1
+        e i j = either error id $ matrixGet (row i) (col j) m
 
 matrixDeterminantNaive :: (Matrix mx, Num (MatrixElement mx)) => mx -> MatrixResult (MatrixElement mx)
 matrixDeterminantNaive m
   | h /= w = Left $ "Square expected, but got " ++ show (h, w)
   | h == 1 = matrixGet 0 0 m
   | otherwise = do
-      minors <- sequence [matrixMinorByHead m i | i <- [0 .. h - 1]]
+      minors <- matrixMinors m
       let (xs, minors') = unzip minors
       dets <- sequence [matrixDeterminant minor | minor <- minors']
       return $
