@@ -190,11 +190,11 @@ unit_determinantCorner = do
 
 diffDeterminant :: [[Int]] -> [Maybe Int]
 diffDeterminant m =
-  let naiveLoL = matrixDeterminantNaive m
+  let naiveLoL = matrixDeterminantNaiveG m matrixMinorsNaive
       smartLoL = matrixDeterminant m
       naiveMap = do
         m <- fromLoL m
-        matrixDeterminantNaive m
+        matrixDeterminantNaiveG m matrixMinorsNaive
       smartMap = do
         m <- fromLoL m
         matrixDeterminant m

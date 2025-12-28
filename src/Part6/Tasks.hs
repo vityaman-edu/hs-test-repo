@@ -112,8 +112,10 @@ matrixMinorsNaive m = mapM minor [0 .. h - 1]
         col j = j + 1
         e i j = either error id $ matrixGet (row i) (col j) m
 
-matrixDeterminantNaive :: (Matrix mx, Num (MatrixElement mx)) => mx -> MatrixResult (MatrixElement mx)
-matrixDeterminantNaive m
+type MatrixMinorsFn mx = mx -> MatrixResult [(MatrixElement mx, mx)]
+
+matrixDeterminantNaiveG :: (Matrix mx, Num (MatrixElement mx)) => mx -> MatrixMinorsFn mx -> MatrixResult (MatrixElement mx)
+matrixDeterminantNaiveG m minors
   | h /= w = Left $ "Square expected, but got " ++ show (h, w)
   | h == 1 = matrixGet 0 0 m
   | otherwise = do
@@ -127,6 +129,9 @@ matrixDeterminantNaive m
             (zip3 (cycle [1, -1]) xs dets)
   where
     (h, w) = matrixSize m
+
+matrixDeterminantNaive :: (Matrix mx, Num (MatrixElement mx)) => mx -> MatrixResult (MatrixElement mx)
+matrixDeterminantNaive m = matrixDeterminantNaiveG m matrixMinors
 
 -- Определите экземпляры данного класса для:
 --  * числа (считается матрицей 1x1)
