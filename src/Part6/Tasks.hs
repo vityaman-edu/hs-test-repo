@@ -111,7 +111,11 @@ instance (Num a) => Matrix [[a]] where
   matrixHeight = length
 
   matrixWidth :: [[a]] -> Int
-  matrixWidth m = maximum $ fmap length m
+  matrixWidth m
+    | null lengths = 0
+    | otherwise = maximum lengths
+    where
+      lengths = fmap length m
 
   matrixGet' :: Int -> Int -> [[a]] -> a
   matrixGet' 0 j (row : _) = fromMaybe 0 $ listToMaybe (drop j row)
@@ -178,10 +182,8 @@ multiplyMatrix a b = case matrixProduct a b of
 determinant :: (Matrix m) => m -> Int
 determinant = notImplementedYet
 
-fromLoL :: (Num a, Eq a) => [[a]] -> SparseMatrix a
-fromLoL lol = case matrixNew h w e of
-  Right m -> m
-  Left m -> error m
+fromLoL :: (Num a, Eq a) => [[a]] -> MatrixResult (SparseMatrix a)
+fromLoL lol = matrixNew h w e
   where
     h = matrixHeight lol
     w = matrixWidth lol

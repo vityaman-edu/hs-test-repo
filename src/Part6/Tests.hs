@@ -24,7 +24,9 @@ unit_zero = do
 
 -- Thanks, dmfrpro!
 unit_multiplyMatrix = do
-  let fromList2D = fromLoL
+  let fromList2D lol = case fromLoL lol of
+        Right m -> m
+        Left m -> error m
       getElem m i j = matrixGet' i j m
 
   multiplyMatrix (2 :: Int) (3 :: Int) @?= 6
@@ -59,3 +61,26 @@ unit_multiplyMatrix = do
   getElem sparseResult 0 0 @?= 1
   getElem sparseResult 1 1 @?= 6
   getElem sparseResult 2 2 @?= 15
+
+diffMatrixProduct ::
+  [[Int]] ->
+  [[Int]] ->
+  ( Maybe (SparseMatrix Int),
+    Maybe (SparseMatrix Int)
+  )
+diffMatrixProduct lhsLoL rhsLoL =
+  let resLoL = do
+        lol <- matrixProduct lhsLoL rhsLoL
+        fromLoL lol
+      resMap = do
+        lhs <- fromLoL lhsLoL
+        rhs <- fromLoL rhsLoL
+        matrixProduct lhs rhs
+   in ( either (const Nothing) Just resLoL,
+        either (const Nothing) Just resMap
+      )
+
+prop_matrixProduct :: [[Int]] -> [[Int]] -> Bool
+prop_matrixProduct lhsLoL rhsLoL =
+  let (resLoL, resMap) = diffMatrixProduct lhsLoL rhsLoL
+   in resLoL == resMap
