@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE InstanceSigs #-}
@@ -6,9 +7,11 @@
 module Part6.Tasks where
 
 import Data.Either (fromRight)
+import Data.List (transpose)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe, listToMaybe)
+import Data.Tuple (swap)
 import Util (notImplementedYet)
 
 -- Разреженное представление матрицы. Все элементы, которых нет в
@@ -32,6 +35,12 @@ class Matrix mx where
   matrixWidth :: mx -> Int
   matrixGet' :: Int -> Int -> mx -> MatrixElement mx
   matrixPut' :: Int -> Int -> MatrixElement mx -> mx -> mx
+
+  matrixProduct :: (Num (MatrixElement mx)) => mx -> mx -> MatrixResult mx
+  matrixProduct = matrixProductNaive
+
+  matrixTranspose :: mx -> MatrixResult mx
+  matrixTranspose = matrixTransposeNaive
 
 matrixGet :: (Matrix mx) => Int -> Int -> mx -> MatrixResult (MatrixElement mx)
 matrixGet i j m = do
@@ -62,8 +71,8 @@ matrixNew h w e = do
       put (i, j) = matrixPut' i j (e i j)
   return $ foldl (flip put) z is
 
-matrixProduct :: (Matrix mx, Num (MatrixElement mx)) => mx -> mx -> MatrixResult mx
-matrixProduct lhs rhs
+matrixProductNaive :: (Matrix mx, Num (MatrixElement mx)) => mx -> mx -> MatrixResult mx
+matrixProductNaive lhs rhs
   | n /= n1 =
       Left $
         "Product incompatible "
@@ -74,6 +83,12 @@ matrixProduct lhs rhs
     a i j = matrixGet' i j lhs
     b i j = matrixGet' i j rhs
     c i j = sum $ fmap (\k -> a i k * b k j) [0 .. n - 1]
+
+matrixTransposeNaive :: (Matrix mx) => mx -> MatrixResult mx
+matrixTransposeNaive m = matrixNew w h e
+  where
+    (h, w) = matrixSize m
+    e j i = matrixGet' i j m
 
 -- Определите экземпляры данного класса для:
 --  * числа (считается матрицей 1x1)
@@ -128,6 +143,13 @@ instance (Num a) => Matrix [[a]] where
       replaceNth 0 e (x : xs) = e : xs
       replaceNth i e (x : xs) = x : replaceNth (i - 1) e xs
   matrixPut' i j e (cols : rows) = cols : matrixPut' (i - 1) j e rows
+
+  matrixTranspose :: [[a]] -> MatrixResult [[a]]
+  matrixTranspose m = Right $ transpose $ fmap (fill w) m
+    where
+      w = matrixWidth m
+      fill w [] = replicate w 0
+      fill w (x : xs) = x : fill (w - 1) xs
 
 instance (Num a, Eq a) => Matrix (SparseMatrix a) where
   type MatrixElement (SparseMatrix a) = a

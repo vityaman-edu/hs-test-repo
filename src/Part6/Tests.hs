@@ -5,6 +5,9 @@ import Part6.Tasks
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 
+eitherToMaybe :: Either e a -> Maybe a
+eitherToMaybe = either (const Nothing) Just
+
 unit_eye = do
   eye 1 @?= one
   eye 1 @?= [[one]]
@@ -62,12 +65,7 @@ unit_multiplyMatrix = do
   getElem sparseResult 1 1 @?= 6
   getElem sparseResult 2 2 @?= 15
 
-diffMatrixProduct ::
-  [[Int]] ->
-  [[Int]] ->
-  ( Maybe (SparseMatrix Int),
-    Maybe (SparseMatrix Int)
-  )
+diffMatrixProduct :: [[Int]] -> [[Int]] -> [Maybe (SparseMatrix Int)]
 diffMatrixProduct lhsLoL rhsLoL =
   let resLoL = do
         lol <- matrixProduct lhsLoL rhsLoL
@@ -76,11 +74,34 @@ diffMatrixProduct lhsLoL rhsLoL =
         lhs <- fromLoL lhsLoL
         rhs <- fromLoL rhsLoL
         matrixProduct lhs rhs
-   in ( either (const Nothing) Just resLoL,
-        either (const Nothing) Just resMap
-      )
+   in [ eitherToMaybe resLoL,
+        eitherToMaybe resMap
+      ]
 
 prop_matrixProduct :: [[Int]] -> [[Int]] -> Bool
 prop_matrixProduct lhsLoL rhsLoL =
-  let (resLoL, resMap) = diffMatrixProduct lhsLoL rhsLoL
+  let [resLoL, resMap] = diffMatrixProduct lhsLoL rhsLoL
    in resLoL == resMap
+
+diffMatrixTranspose :: [[Int]] -> [Maybe (SparseMatrix Int)]
+diffMatrixTranspose m =
+  let smartLoL = do
+        m <- matrixTranspose m
+        fromLoL m
+      naiveLoL = do
+        m <- matrixTransposeNaive m
+        fromLoL m
+      naiveMap = do
+        m <- fromLoL m
+        matrixTransposeNaive m
+   in fmap
+        eitherToMaybe
+        [ smartLoL,
+          naiveLoL,
+          naiveMap
+        ]
+
+prop_matrixTransposeLoL :: [[Int]] -> Bool
+prop_matrixTransposeLoL m =
+  let [smartLoL, naiveLoL, naiveMap] = diffMatrixTranspose m
+   in smartLoL == naiveLoL && naiveLoL == naiveMap
