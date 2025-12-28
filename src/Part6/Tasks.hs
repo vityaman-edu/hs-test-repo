@@ -144,6 +144,18 @@ instance (Num a) => Matrix [[a]] where
       replaceNth i e (x : xs) = x : replaceNth (i - 1) e xs
   matrixPut' i j e (cols : rows) = cols : matrixPut' (i - 1) j e rows
 
+  matrixProduct :: (Num a) => [[a]] -> [[a]] -> MatrixResult [[a]]
+  matrixProduct lhs rhs
+    | n /= n' =
+        Left $
+          "Product incompatible "
+            ++ (show (m, n) ++ " and " ++ show (n', p))
+    | otherwise = do
+        trhs <- matrixTranspose rhs
+        return $ [[sum $ zipWith (*) l r | r <- trhs] | l <- lhs]
+    where
+      ((m, n), (n', p)) = (matrixSize lhs, matrixSize rhs)
+
   matrixTranspose :: [[a]] -> MatrixResult [[a]]
   matrixTranspose m = Right $ transpose $ fmap (fill w) m
     where

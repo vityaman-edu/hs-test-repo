@@ -67,21 +67,34 @@ unit_multiplyMatrix = do
 
 diffMatrixProduct :: [[Int]] -> [[Int]] -> [Maybe (SparseMatrix Int)]
 diffMatrixProduct lhsLoL rhsLoL =
-  let resLoL = do
+  let smartLoL = do
         lol <- matrixProduct lhsLoL rhsLoL
         fromLoL lol
-      resMap = do
+      naiveLoL = do
+        lol <- matrixProductNaive lhsLoL rhsLoL
+        fromLoL lol
+      smartMap = do
         lhs <- fromLoL lhsLoL
         rhs <- fromLoL rhsLoL
         matrixProduct lhs rhs
-   in [ eitherToMaybe resLoL,
-        eitherToMaybe resMap
-      ]
+      naiveMap = do
+        lhs <- fromLoL lhsLoL
+        rhs <- fromLoL rhsLoL
+        matrixProductNaive lhs rhs
+   in fmap
+        eitherToMaybe
+        [ smartLoL,
+          naiveLoL,
+          smartMap,
+          naiveMap
+        ]
 
 prop_matrixProduct :: [[Int]] -> [[Int]] -> Bool
 prop_matrixProduct lhsLoL rhsLoL =
-  let [resLoL, resMap] = diffMatrixProduct lhsLoL rhsLoL
-   in resLoL == resMap
+  let [smartLoL, naiveLoL, smartMap, naiveMap] = diffMatrixProduct lhsLoL rhsLoL
+   in smartLoL == naiveLoL
+        && naiveLoL == smartMap
+        && smartMap == naiveMap
 
 diffMatrixTranspose :: [[Int]] -> [Maybe (SparseMatrix Int)]
 diffMatrixTranspose m =
