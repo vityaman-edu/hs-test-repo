@@ -195,11 +195,28 @@ instance (Num a) => Matrix [[a]] where
       ((m, n), (n', p)) = (matrixSize lhs, matrixSize rhs)
 
   matrixTranspose :: [[a]] -> MatrixResult [[a]]
-  matrixTranspose m = Right $ transpose $ fmap (fill w) m
+  matrixTranspose m = Right $ transpose $ matrixRectanglize m
+
+  matrixMinors :: [[a]] -> MatrixResult [(a, [[a]])]
+  matrixMinors m
+    | h == 0 || w == 0 = Left $ "Bad matrix size " ++ show (h, w)
+    | otherwise = Right ((\(h, i) -> (h, removeAt i tails)) <$> zip heads [0 .. h - 1])
     where
-      w = matrixWidth m
-      fill w [] = replicate w 0
-      fill w (x : xs) = x : fill (w - 1) xs
+      rect = matrixRectanglize m
+      h = length rect
+      w = length $ head rect
+      heads = fmap head rect
+      tails = fmap tail rect
+      removeAt n xs =
+        let (as, bs) = splitAt n xs
+         in as ++ drop 1 bs
+
+matrixRectanglize :: (Num a) => [[a]] -> [[a]]
+matrixRectanglize m = fmap (fill w) m
+  where
+    w = matrixWidth m
+    fill w [] = replicate w 0
+    fill w (x : xs) = x : fill (w - 1) xs
 
 instance (Num a, Eq a) => Matrix (SparseMatrix a) where
   type MatrixElement (SparseMatrix a) = a

@@ -1,6 +1,7 @@
 module Part6.Tests where
 
 import qualified Data.Map
+import Debug.Trace (trace)
 import Part6.Tasks
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
@@ -121,8 +122,8 @@ diffMatrixTranspose m =
           naiveMap
         ]
 
-prop_matrixTransposeLoL :: [[Int]] -> Bool
-prop_matrixTransposeLoL m =
+prop_matrixTranspose :: [[Int]] -> Bool
+prop_matrixTranspose m =
   let [smartLoL, naiveLoL, smartMap, naiveMap] = diffMatrixTranspose m
    in smartLoL == naiveLoL
         && naiveLoL == smartMap
@@ -166,3 +167,43 @@ unit_determinant = do
 
   let diagSparse = fromList2D [[2, 0, 0], [0, 3, 0], [0, 0, 4]] :: SparseMatrix Int
   determinant diagSparse @?= 24
+
+unit_determinantCorner :: IO ()
+unit_determinantCorner = do
+  let det m = eitherToMaybe (matrixDeterminant (m :: [[Int]]))
+
+  det ([] :: [[Int]]) @?= Nothing
+  det ([[]] :: [[Int]]) @?= Nothing
+  det ([[0]] :: [[Int]]) @?= Just 0
+  det ([[0, 0]] :: [[Int]]) @?= Nothing
+  det ([[], []] :: [[Int]]) @?= Nothing
+  det ([[0], []] :: [[Int]]) @?= Nothing
+  det ([[], [0]] :: [[Int]]) @?= Nothing
+  det ([[0, 0], []] :: [[Int]]) @?= Just 0
+  det ([[], [0, 0]] :: [[Int]]) @?= Just 0
+  det ([[], [0, 0], []] :: [[Int]]) @?= Nothing
+  det ([[], [], []] :: [[Int]]) @?= Nothing
+  det ([[], [], [0]] :: [[Int]]) @?= Nothing
+  det ([[], [], [0, 0]] :: [[Int]]) @?= Nothing
+  det ([[], [], [0, 0, 0]] :: [[Int]]) @?= Just 0
+  det ([[], [0, 0, 0], []] :: [[Int]]) @?= Just 0
+
+diffDeterminant :: [[Int]] -> [Maybe Int]
+diffDeterminant m =
+  let naiveLoL = matrixDeterminantNaive m
+      smartLoL = matrixDeterminant m
+      naiveMap = do
+        m <- fromLoL m
+        matrixDeterminantNaive m
+      smartMap = do
+        m <- fromLoL m
+        matrixDeterminant m
+   in fmap eitherToMaybe [naiveLoL, smartLoL, naiveMap, smartMap]
+
+prop_determinant :: [[Int]] -> Property
+prop_determinant m =
+  discardAfter 100000 $
+    let [naiveLoL, smartLoL, naiveMap, smartMap] = diffDeterminant m
+     in naiveLoL == smartLoL
+          && smartLoL == naiveMap
+          && naiveMap == smartMap
