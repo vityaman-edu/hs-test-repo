@@ -8,6 +8,7 @@ import Test.Tasty.QuickCheck
 eitherToMaybe :: Either e a -> Maybe a
 eitherToMaybe = either (const Nothing) Just
 
+unit_eye :: IO ()
 unit_eye = do
   eye 1 @?= one
   eye 1 @?= [[one]]
@@ -17,6 +18,7 @@ unit_eye = do
   where
     one :: Int; one = 1
 
+unit_zero :: IO ()
 unit_zero = do
   zero 1 1 @?= zz
   zero 2 1 @?= [[zz, zz]]
@@ -26,6 +28,7 @@ unit_zero = do
     zz :: Int; zz = 0
 
 -- Thanks, dmfrpro!
+unit_multiplyMatrix :: IO ()
 unit_multiplyMatrix = do
   let fromList2D lol = case fromLoL lol of
         Right m -> m
@@ -124,3 +127,42 @@ prop_matrixTransposeLoL m =
    in smartLoL == naiveLoL
         && naiveLoL == smartMap
         && smartMap == naiveMap
+
+-- Thanks, dmfrpro!
+unit_determinant :: IO ()
+unit_determinant = do
+  let fromList2D lol = case fromLoL lol of
+        Right m -> m
+        Left m -> error m
+      getElem m i j = matrixGet' i j m
+
+  determinant (5 :: Int) @?= 5
+  determinant (0 :: Int) @?= 0
+  determinant ((-3) :: Int) @?= -3
+
+  determinant ([[7]] :: [[Int]]) @?= 7
+
+  determinant ([[1, 2], [3, 4]] :: [[Int]]) @?= -2
+  determinant ([[5, 6], [7, 8]] :: [[Int]]) @?= -2
+
+  determinant ([[2, 5, 3], [1, -2, -1], [1, 3, 4]] :: [[Int]]) @?= -20
+
+  determinant (eye 1 :: [[Int]]) @?= 1
+  determinant (eye 2 :: [[Int]]) @?= 1
+  determinant (eye 3 :: [[Int]]) @?= 1
+
+  determinant (zero 2 2 :: [[Int]]) @?= 0
+  determinant (zero 3 3 :: [[Int]]) @?= 0
+
+  let sparse2x2 = fromList2D [[1, 2], [3, 4]] :: SparseMatrix Int
+  determinant sparse2x2 @?= -2
+
+  let sparse3x3 = fromList2D [[2, 5, 3], [1, -2, -1], [1, 3, 4]] :: SparseMatrix Int
+  determinant sparse3x3 @?= -20
+
+  determinant (eye 2 :: SparseMatrix Int) @?= 1
+
+  determinant (zero 3 3 :: SparseMatrix Int) @?= 0
+
+  let diagSparse = fromList2D [[2, 0, 0], [0, 3, 0], [0, 0, 4]] :: SparseMatrix Int
+  determinant diagSparse @?= 24

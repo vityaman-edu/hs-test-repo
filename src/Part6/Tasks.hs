@@ -12,6 +12,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (fromMaybe, listToMaybe)
 import Data.Tuple (swap)
+import Debug.Trace (trace)
 import Util (notImplementedYet)
 
 -- Разреженное представление матрицы. Все элементы, которых нет в
@@ -42,6 +43,12 @@ class Matrix mx where
   matrixTranspose :: mx -> MatrixResult mx
   matrixTranspose = matrixTransposeNaive
 
+  matrixMinorByHead :: mx -> Int -> MatrixResult (MatrixElement mx, mx)
+  matrixMinorByHead = matrixMinorByHeadNaive
+
+  matrixDeterminant :: (Num (MatrixElement mx)) => mx -> MatrixResult (MatrixElement mx)
+  matrixDeterminant = matrixDeterminantNaive
+
 matrixGet :: (Matrix mx) => Int -> Int -> mx -> MatrixResult (MatrixElement mx)
 matrixGet i j m = do
   _ <- matrixCheckRange i j m
@@ -55,7 +62,7 @@ matrixPut i j e m = do
 matrixCheckRange :: (Matrix mx) => Int -> Int -> mx -> MatrixResult ()
 matrixCheckRange i j m
   | i < 0 || j < 0 = Left $ "Negative index " ++ show (i, j)
-  | h < i || w < j = Left $ "Out of range index " ++ show (i, j)
+  | h <= i || w <= j = Left $ "Out of range index " ++ show (i, j)
   | otherwise = Right ()
   where
     h = matrixHeight m
@@ -89,6 +96,35 @@ matrixTransposeNaive m = matrixNew w h e
   where
     (h, w) = matrixSize m
     e j i = matrixGet' i j m
+
+matrixMinorByHeadNaive :: (Matrix mx) => mx -> Int -> MatrixResult (MatrixElement mx, mx)
+matrixMinorByHeadNaive m index = do
+  x <- matrixGet index 0 m
+  new <- matrixNew (h - 1) (w - 1) e
+  return (x, new)
+  where
+    h = matrixHeight m
+    w = matrixWidth m
+    row i | i < index = i
+    row i | index <= i = i + 1
+    col j = j + 1
+    e i j = either error id $ matrixGet (row i) (col j) m
+
+matrixDeterminantNaive :: (Matrix mx, Num (MatrixElement mx)) => mx -> MatrixResult (MatrixElement mx)
+matrixDeterminantNaive m
+  | h /= w = Left $ "Square expected, but got " ++ show (h, w)
+  | h == 1 = matrixGet 0 0 m
+  | otherwise = do
+      minors <- sequence [matrixMinorByHead m i | i <- [0 .. h - 1]]
+      let (xs, minors') = unzip minors
+      dets <- sequence [matrixDeterminant minor | minor <- minors']
+      return $
+        sum $
+          fmap
+            (\(sign, x, det) -> sign * x * det)
+            (zip3 (cycle [1, -1]) xs dets)
+  where
+    (h, w) = matrixSize m
 
 -- Определите экземпляры данного класса для:
 --  * числа (считается матрицей 1x1)
@@ -224,8 +260,10 @@ multiplyMatrix a b = case matrixProduct a b of
   Left m -> error m
 
 -- Определитель матрицы
-determinant :: (Matrix m) => m -> Int
-determinant = notImplementedYet
+determinant :: (Matrix m, Num (MatrixElement m)) => m -> MatrixElement m
+determinant m = case matrixDeterminant m of
+  Right m -> m
+  Left m -> error m
 
 fromLoL :: (Num a, Eq a) => [[a]] -> MatrixResult (SparseMatrix a)
 fromLoL lol = matrixNew h w e
