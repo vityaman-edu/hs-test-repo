@@ -255,6 +255,26 @@ instance (Num a, Eq a) => Matrix (SparseMatrix a) where
           Map.empty
           (Map.toList $ sparseMatrixElements m)
 
+  matrixMinors :: SparseMatrix a -> MatrixResult [(a, SparseMatrix a)]
+  matrixMinors m =
+    Right $
+      [(matrixGet' i 0 m, minor i 0 m) | i <- [0 .. h - 1]]
+    where
+      h = sparseMatrixHeight m
+      minor :: Int -> Int -> SparseMatrix a -> SparseMatrix a
+      minor i j m = SparseMatrix (w - 1) (h - 1) new
+        where
+          h = sparseMatrixHeight m
+          w = sparseMatrixWidth m
+          old = sparseMatrixElements m
+          other =
+            Map.filterWithKey (\(r, c) _ -> r /= i && c /= j) old
+          correct (r, c) =
+            ( if r > i then r - 1 else r,
+              if c > j then c - 1 else c
+            )
+          new = Map.mapKeys correct other
+
 -- Реализуйте следующие функции
 -- Единичная матрица
 eye :: (Matrix m, Num (MatrixElement m)) => Int -> m
