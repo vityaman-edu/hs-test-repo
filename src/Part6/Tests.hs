@@ -91,6 +91,9 @@ diffMatrixTranspose m =
       naiveLoL = do
         m <- matrixTransposeNaive m
         fromLoL m
+      smartMap = do
+        m <- fromLoL m
+        matrixTranspose m
       naiveMap = do
         m <- fromLoL m
         matrixTransposeNaive m
@@ -98,10 +101,13 @@ diffMatrixTranspose m =
         eitherToMaybe
         [ smartLoL,
           naiveLoL,
+          smartMap,
           naiveMap
         ]
 
 prop_matrixTransposeLoL :: [[Int]] -> Bool
 prop_matrixTransposeLoL m =
-  let [smartLoL, naiveLoL, naiveMap] = diffMatrixTranspose m
-   in smartLoL == naiveLoL && naiveLoL == naiveMap
+  let [smartLoL, naiveLoL, smartMap, naiveMap] = diffMatrixTranspose m
+   in smartLoL == naiveLoL
+        && naiveLoL == smartMap
+        && smartMap == naiveMap

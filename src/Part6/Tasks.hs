@@ -177,6 +177,17 @@ instance (Num a, Eq a) => Matrix (SparseMatrix a) where
       put 0 = Map.delete (i, j)
       put e = Map.insert (i, j) e
 
+  matrixTranspose :: SparseMatrix a -> MatrixResult (SparseMatrix a)
+  matrixTranspose m = Right $ SparseMatrix h w es
+    where
+      h = matrixHeight m
+      w = matrixWidth m
+      es =
+        foldr
+          (\((i, j), x) m -> Map.insert (j, i) x m)
+          Map.empty
+          (Map.toList $ sparseMatrixElements m)
+
 -- Реализуйте следующие функции
 -- Единичная матрица
 eye :: (Matrix m, Num (MatrixElement m)) => Int -> m
